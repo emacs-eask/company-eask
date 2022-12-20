@@ -3,7 +3,7 @@
          "Company backend for Eask-file")
 
 (website-url "https://github.com/emacs-eask/company-eask")
-(keywords "tools")
+(keywords "convenience")
 
 (package-file "company-eask.el")
 
