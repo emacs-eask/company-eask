@@ -7,7 +7,6 @@
 
 (package-file "company-eask.el")
 
-(website-ur)
 (script "test" "echo \"Error: no test specified\" && exit 1")
 
 (source "gnu")
