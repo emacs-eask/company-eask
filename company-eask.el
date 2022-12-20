@@ -34,6 +34,7 @@
 (require 'cl-lib)
 
 (require 'company)
+(require 'company-elisp)
 (require 'eask-api)
 
 (defgroup company-eask nil
@@ -42,27 +43,50 @@
   :group 'tool
   :link '(url-link :tag "Repository" "https://github.com/emacs-eask/company-eask"))
 
-;; (defun company-eask--add-keywords (&rest _)
-;;   "Add keywords to variable `company-keywords-alist'."
-;;   (unless (assoc 'eask-mode company-keywords-alist)
-;;     (push `(eask-mode . ,eask-file-keywords) company-keywords-alist)))
+;;
+;; (@* "Core" )
+;;
 
-;;(add-hook 'eask-mode-hook #'company-eask--add-keywords)
+(defun company-eask--s-replace (old new s)
+  "String replace."
+  (if (fboundp #'string-replace)
+      (string-replace old new s)
+    (replace-regexp-in-string (regexp-quote old) new s t t)))
+
+(defun company-eask--improve-doc (symbol)
+  "Display only the directive name, and replace alias description."
+  (let* ((buf-str (with-current-buffer (help-buffer) (buffer-string)))
+         (str (company-eask--s-replace "eask-f-" "" buf-str))
+         (str (company-eask--s-replace
+               " is a Lisp closure "
+               (format " is an alias for ‘%s’ "
+                       (propertize (eask-2str symbol) 'face
+                                   `( :foreground "cyan"
+                                      :underline t)))
+               str)))
+    str))
 
 (defun company-eask--candidates ()
-  ""
+  "Return a list of candidates."
   eask-file-keywords)
 
-(defun company-eask--annotation (candidate)
-  ""
-  )
+(defun company-eask--annotation (_candidate)
+  "Return annotation for CANDIDATE."
+  "(Directive)")
 
 (defun company-eask--doc-buffer (candidate)
-  ""
-  (company-doc-buffer
-   (if (ignore-errors (describe-function (intern (format "eask-f-%s" candidate))))
-       (with-current-buffer "*Help*" (buffer-string))
-     "")))
+  "Return document for CANDIDATE."
+  (let ((symbol (intern (format "eask-f-%s" candidate))))
+    (save-window-excursion
+      (ignore-errors
+        (cond
+         ((fboundp symbol) (describe-function symbol))
+         (t (signal 'user-error nil)))
+        (company-doc-buffer (company-eask--improve-doc symbol))))))
+
+;;
+;; (@* "Entry" )
+;;
 
 ;;;###autoload
 (defun company-eask (command &optional arg &rest ignored)
@@ -72,7 +96,8 @@ Arguments COMMAND, ARG and IGNORED are standard arguments from `company-mode`."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-eask))
-    (prefix (company-grab-symbol))
+    (prefix (and (derived-mode-p 'eask-mode)
+                 (company-elisp--prefix)))
     (candidates (company-eask--candidates))
     (annotation (company-eask--annotation arg))
     (doc-buffer (company-eask--doc-buffer arg))))
