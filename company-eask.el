@@ -35,7 +35,7 @@
 
 (require 'company)
 (require 'company-elisp)
-(require 'eask-api)
+(require 'eask-api-core)
 
 (defgroup company-eask nil
   "Company completion for Eask-file."
