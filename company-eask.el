@@ -54,7 +54,7 @@
     (replace-regexp-in-string (regexp-quote old) new s t t)))
 
 (defun company-eask--improve-doc (symbol)
-  "Display only the directive name, and replace alias description."
+  "Display only the directive name (SYMBOL), and replace alias description."
   (let* ((buf-str (with-current-buffer (help-buffer) (buffer-string)))
          (str (company-eask--s-replace "eask-f-" "" buf-str))
          (str (company-eask--s-replace
