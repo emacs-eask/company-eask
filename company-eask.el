@@ -48,7 +48,7 @@
 ;;
 
 (defun company-eask--s-replace (old new s)
-  "String replace."
+  "Replace OLD with NEW in S each time it occurs."
   (if (fboundp #'string-replace)
       (string-replace old new s)
     (replace-regexp-in-string (regexp-quote old) new s t t)))
