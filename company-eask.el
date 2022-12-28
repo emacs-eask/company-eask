@@ -47,17 +47,11 @@
 ;; (@* "Core" )
 ;;
 
-(defun company-eask--s-replace (old new s)
-  "Replace OLD with NEW in S each time it occurs."
-  (if (fboundp #'string-replace)
-      (string-replace old new s)
-    (replace-regexp-in-string (regexp-quote old) new s t t)))
-
 (defun company-eask--improve-doc (symbol)
   "Display only the directive name (SYMBOL), and replace alias description."
   (let* ((buf-str (with-current-buffer (help-buffer) (buffer-string)))
-         (str (company-eask--s-replace "eask-f-" "" buf-str))
-         (str (company-eask--s-replace
+         (str (eask-s-replace "eask-f-" "" buf-str))
+         (str (eask-s-replace
                " is a Lisp closure "
                (format " is an alias for ‘%s’ "
                        (propertize (eask-2str symbol) 'face
