@@ -6,7 +6,7 @@
 ;; Maintainer: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/emacs-eask/company-eask
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "26.1") (company "0.8.0") (eask-api "0.1.0"))
+;; Package-Requires: ((emacs "26.1") (company "0.8.0") (eask "0.1.0"))
 ;; Keywords: convenience
 
 ;; This file is not part of GNU Emacs.
@@ -35,7 +35,7 @@
 
 (require 'company)
 (require 'company-elisp)
-(require 'eask-api-core)
+(require 'eask-core)
 
 (defgroup company-eask nil
   "Company completion for Eask-file."
