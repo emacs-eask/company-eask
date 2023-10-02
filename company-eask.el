@@ -83,10 +83,10 @@
 ;;
 
 ;;;###autoload
-(defun company-eask (command &optional arg &rest ignored)
+(defun company-eask (command &optional arg &rest _)
   "Company backend for Eask-file.
 
-Arguments COMMAND, ARG and IGNORED are standard arguments from `company-mode`."
+Arguments COMMAND and ARG are standard arguments from `company-mode`."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-eask))
