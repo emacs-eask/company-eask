@@ -34,7 +34,6 @@
 (require 'cl-lib)
 
 (require 'company)
-(require 'company-elisp)
 (require 'eask-core)
 
 (defgroup company-eask nil
@@ -42,6 +41,48 @@
   :prefix "company-eask-"
   :group 'tool
   :link '(url-link :tag "Repository" "https://github.com/emacs-eask/company-eask"))
+
+;;
+;; (@* "Prefix" )
+;;
+
+;; NOTE: Copied from company-elisp
+
+(defvar company-eask-defun-names '("defun" "defmacro" "defsubst"))
+
+(defun company-eask--fns-regexp (&rest names)
+  (concat "\\_<\\(?:cl-\\)?" (regexp-opt names) "\\*?\\_>"))
+
+(defvar company-eask-defuns-regexp
+  (concat "([ \t\n]*"
+          (apply #'company-eask--fns-regexp company-eask-defun-names)))
+
+(defun company-eask--should-complete ()
+  (let ((start (point))
+        (depth (car (syntax-ppss))))
+    (not
+     (when (> depth 0)
+       (save-excursion
+         (up-list (- depth))
+         (when (looking-at-p company-eask-defuns-regexp)
+           (forward-char)
+           (forward-sexp 1)
+           (unless (= (point) start)
+             (condition-case nil
+                 (let ((args-end (scan-sexps (point) 2)))
+                   (or (null args-end)
+                       (> args-end start)))
+               (scan-error
+                t)))))))))
+
+(defun company-eask--prefix ()
+  (let ((prefix (company-grab-symbol)))
+    (if prefix
+        (when (if (company-in-string-or-comment)
+                  (= (char-before (- (point) (length prefix))) ?`)
+                (company-eask--should-complete))
+          prefix)
+      'stop)))
 
 ;;
 ;; (@* "Core" )
@@ -91,7 +132,7 @@ Arguments COMMAND and ARG are standard arguments from `company-mode`."
   (cl-case command
     (interactive (company-begin-backend 'company-eask))
     (prefix (and (derived-mode-p 'eask-mode)
-                 (company-elisp--prefix)))
+                 (company-eask--prefix)))
     (candidates (company-eask--candidates))
     (annotation (company-eask--annotation arg))
     (doc-buffer (company-eask--doc-buffer arg))))
