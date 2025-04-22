@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "company-eask"
          "0.1.0"
          "Company backend for Eask-file")
