@@ -14,6 +14,9 @@
 ```elisp
 (require 'company-eask)
 (add-to-list 'company-backends 'company-eask)
+
+;; Do completion with package name.
+(setq company-eask-complete-package-name t)
 ```
 
 ## 🛠️ Contribute

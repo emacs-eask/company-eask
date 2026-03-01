@@ -43,6 +43,11 @@
   :group 'tool
   :link '(url-link :tag "Repository" "https://github.com/emacs-eask/company-eask"))
 
+(defcustom company-eask-complete-package-name t
+  "Set to non-nil to enable package name completion."
+  :type 'boolean
+  :group 'company-eask)
+
 (defvar company-eask--sources (mapcar (lambda (source)
                                         (eask-2str (car source)))
                                       eask-source-mapping)
@@ -69,20 +74,51 @@
          (str (eask-s-replace
                " is a Lisp closure "
                (format " is an alias for ‘%s’ "
-                       (propertize (eask-2str symbol) 'face
-                                   `( :foreground "cyan"
-                                      :underline t)))
+                       (propertize (eask-2str symbol)
+                                   'face `( :foreground "cyan"
+                                            :underline t)))
                str)))
     str))
+
+(defun company-eask--scope-symbol ()
+  "Return the current scope symbol in the buffer."
+  (save-excursion
+    (let ((start) (end)
+          (pt (point)))
+      (when (search-backward "(" nil t)
+        (setq start (point))
+        (forward-sexp 1)
+        (setq end (point)))
+      (when (and start end
+                 (< start pt) (< pt end))
+        (goto-char (1+ start))
+        (thing-at-point 'symbol)))))
+
+(defun company-eask--scope-p (&rest scopes)
+  "Return non-nil if the current scope is in SCOPES."
+  (let ((scope (company-eask--scope-symbol)))
+    (member scope scopes)))
+
+(defun company-eask--scope-first-p ()
+  "Return non-nil if current point at the first scope."
+  (or (equal (char-before) ?\()
+      (save-excursion (forward-symbol -1)
+                      (equal (char-before) ?\())))
 
 (defun company-eask--candidates ()
   "Return a list of candidates."
   (if (company-in-string-or-comment)
-      (append company-eask--sources
-              company-eask--keywords
-              company-eask--packages)
-    (append company-eask--sources
-            eask-file-keywords)))
+      (append (when (company-eask--scope-p "source")
+                company-eask--sources)
+              (when (company-eask--scope-p "keywords")
+                company-eask--keywords)
+              (when (and company-eask-complete-package-name
+                         (company-eask--scope-p "depends-on"))
+                company-eask--packages))
+    (append (when (company-eask--scope-p "source")
+              company-eask--sources)
+            (when (company-eask--scope-first-p)
+              eask-file-keywords))))
 
 (defun company-eask--annotation (candidate)
   "Return annotation for CANDIDATE."
